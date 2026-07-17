@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <title>KeyVault</title>
+  <style>
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background-color: #1a237e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .contenedor {
+      background-color: white;
+      padding: 40px;
+      border-radius: 12px;
+      width: 400px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #1a237e;
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    p {
+      color: gray;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      font-weight: bold;
+      color: #1a237e;
+      margin-bottom: 5px;
+      margin-top: 15px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    input:focus {
+      border-color: #1a237e;
+      outline: none;
+    }
+
+    span {
+      color: red;
+      font-size: 12px;
+      display: block;
+      text-align: left;
+      margin-top: 3px;
+    }
+
+    button {
+      margin-top: 25px;
+      width: 100%;
+      padding: 12px;
+      background-color: #1a237e;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #283593;
+    }
+
+    #mensaje-exito {
+      color: green;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="contenedor">
+
+    <h1>KeyVault</h1>
+    <p>Gestor de Contraseñas</p>
+
+    <form id="formulario">
+
+      <label>Correo electrónico</label>
+      <input type="email" id="correo" placeholder="ejemplo@correo.com">
+      <span id="error-correo"></span>
+
+      <label>Contraseña maestra</label>
+      <input type="password" id="contraseña" placeholder="Tu contraseña">
+      <span id="error-contraseña"></span>
+
+      <button type="button" onclick="validar()">Iniciar sesión</button>
+
+      <p id="mensaje-exito"></p>
+
+    </form>
+
+  </div>
+
+  <script>
+
+    function validar() {
+
+      document.getElementById("error-correo").textContent = "";
+      document.getElementById("error-contraseña").textContent = "";
+      document.getElementById("mensaje-exito").textContent = "";
+
+      let correo = document.getElementById("correo").value;
+      let contraseña = document.getElementById("contraseña").value;
+
+      let hayErrores = false;
+
+      if (correo === "") {
+        document.getElementById("error-correo").textContent = "El correo es obligatorio";
+        hayErrores = true;
+      } else if (!correo.includes("@")) {
+        document.getElementById("error-correo").textContent = "El correo no es válido";
+        hayErrores = true;
+      }
+
+      if (contraseña === "") {
+        document.getElementById("error-contraseña").textContent = "La contraseña es obligatoria";
+        hayErrores = true;
+      } else if (contraseña.length < 6) {
+        document.getElementById("error-contraseña").textContent = "La contraseña debe tener mínimo 6 caracteres";
+        hayErrores = true;
+      }
+
+      if (!hayErrores) {
+        document.getElementById("mensaje-exito").textContent = "✅ Iniciando sesión...";
+      }
+
+    }
+
+  </script>
+
+</body>
+</html>
