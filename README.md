@@ -4,7 +4,7 @@
 KeyVault es una aplicación web que permite almacenar, organizar y gestionar contraseñas de forma segura.
 
 ## Tecnologías utilizadas
-- **Frontend:** HTML5, CSS3, JavaScript
+- **Frontend:** HTML, CSS, JavaScript
 - **Base de datos relacional:** MySQL
 - **Base de datos no relacional:** MongoDB
 - **Persistencia local:** localStorage
@@ -19,9 +19,8 @@ KeyVault es una aplicación web que permite almacenar, organizar y gestionar con
 
 ## Estándares de codificación
 - Variables: camelCase (ej. `nombreServicio`)
-- Clases: PascalCase (ej. `EntradaContrasena`)
+- Clases: PascalCase (ej. `EntradaContraseña`)
 - Funciones: camelCase describiendo la acción (ej. `guardar()`, `eliminar()`)
-- Comentarios en español explicando la lógica de negocio
 
 ## Estructura de archivos
 - `index.html` — Módulo de login
