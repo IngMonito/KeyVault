@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # KeyVault - Gestor de Contraseñas
 
 ## Descripción
@@ -28,3 +29,6 @@ KeyVault es una aplicación web que permite almacenar, organizar y gestionar con
 
 ## Autor
 Samuel Alejandro Malaver Motivar - Ficha 3235887
+=======
+# KeyVault
+>>>>>>> 8f87d21631374830e15414935313b86fe12e512b
