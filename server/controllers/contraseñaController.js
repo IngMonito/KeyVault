@@ -1,59 +1,71 @@
-// Controlador de contraseñas - lógica de negocio
-const contrasenas = [];
+const pool = require('../config/db');
 
-// Obtener todas las contraseñas
-const obtenerTodas = (req, res) => {
-  res.json(contrasenas);
+const obtenerTodas = async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT * FROM entrada_contrasena WHERE id_usuario = ?',
+      [req.usuario.id]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
-// Crear contraseña
-const crear = (req, res) => {
-  const { idUsuario, nombreServicio, usuarioServicio, contrasenaCifrada, categoria } = req.body;
+const crear = async (req, res) => {
+  const { nombreServicio, urlServicio, usuarioServicio, contrasenaCifrada, notas, idCategoria } = req.body;
 
-  // Validaciones
-  if (!nombreServicio || !usuarioServicio || !contrasenaCifrada || !categoria) {
-    return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+  if (!nombreServicio || !contrasenaCifrada) {
+    return res.status(400).json({ error: 'Nombre del servicio y contraseña son obligatorios' });
   }
 
-  // Crear objeto contraseña
-  const nuevaContrasena = {
-    id: contrasenas.length + 1,
-    idUsuario,
-    nombreServicio,
-    usuarioServicio,
-    contrasenaCifrada,
-    categoria,
-    fechaCreacion: new Date()
-  };
-
-  contrasenas.push(nuevaContrasena);
-  res.status(201).json({ mensaje: 'Contraseña guardada correctamente', contrasena: nuevaContrasena });
+  try {
+    const [result] = await pool.query(
+      'INSERT INTO entrada_contrasena (id_usuario, id_categoria, nombre_servicio, url_servicio, usuario_servicio, contrasena_cifrada, notas) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [req.usuario.id, idCategoria || null, nombreServicio, urlServicio || null, usuarioServicio || null, contrasenaCifrada, notas || null]
+    );
+    res.status(201).json({ mensaje: 'Contraseña guardada correctamente', id: result.insertId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
-// Actualizar contraseña
-const actualizar = (req, res) => {
+const actualizar = async (req, res) => {
   const { id } = req.params;
-  const indice = contrasenas.findIndex(c => c.id === parseInt(id));
+  const { nombreServicio, urlServicio, usuarioServicio, contrasenaCifrada, notas, idCategoria } = req.body;
 
-  if (indice === -1) {
-    return res.status(404).json({ error: 'Contraseña no encontrada' });
+  if (!nombreServicio || !contrasenaCifrada) {
+    return res.status(400).json({ error: 'Nombre del servicio y contraseña son obligatorios' });
   }
 
-  contrasenas[indice] = { ...contrasenas[indice], ...req.body };
-  res.json({ mensaje: 'Contraseña actualizada correctamente', contrasena: contrasenas[indice] });
+  try {
+    const [result] = await pool.query(
+      'UPDATE entrada_contrasena SET id_categoria = ?, nombre_servicio = ?, url_servicio = ?, usuario_servicio = ?, contrasena_cifrada = ?, notas = ? WHERE id_entrada = ? AND id_usuario = ?',
+      [idCategoria || null, nombreServicio, urlServicio || null, usuarioServicio || null, contrasenaCifrada, notas || null, id, req.usuario.id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Contraseña no encontrada' });
+    }
+    res.json({ mensaje: 'Contraseña actualizada correctamente' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
-// Eliminar contraseña
-const eliminar = (req, res) => {
+const eliminar = async (req, res) => {
   const { id } = req.params;
-  const indice = contrasenas.findIndex(c => c.id === parseInt(id));
-
-  if (indice === -1) {
-    return res.status(404).json({ error: 'Contraseña no encontrada' });
+  try {
+    const [result] = await pool.query(
+      'DELETE FROM entrada_contrasena WHERE id_entrada = ? AND id_usuario = ?',
+      [id, req.usuario.id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Contraseña no encontrada' });
+    }
+    res.json({ mensaje: 'Contraseña eliminada correctamente' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-
-  contrasenas.splice(indice, 1);
-  res.json({ mensaje: 'Contraseña eliminada correctamente' });
 };
 
 module.exports = { obtenerTodas, crear, actualizar, eliminar };
