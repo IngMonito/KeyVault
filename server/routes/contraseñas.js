@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const contrasenaController = require('../controllers/contrasenaController');
+const contraseñaController = require('../controllers/contraseñaController');
 
-router.get('/', contrasenaController.obtenerTodas);
-router.post('/', contrasenaController.crear);
-router.put('/:id', contrasenaController.actualizar);
-router.delete('/:id', contrasenaController.eliminar);
+router.get('/', contraseñaController.obtenerTodas);
+router.post('/', contraseñaController.crear);
+router.put('/:id', contraseñaController.actualizar);
+router.delete('/:id', contraseñaController.eliminar);
 
 module.exports = router;
