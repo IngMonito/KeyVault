@@ -34,6 +34,23 @@
       font-size: 14px;
     }
 
+    .btn-cerrar {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .btn-cerrar:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
     .contenido {
       max-width: 900px;
       margin: 0 auto;
@@ -100,7 +117,6 @@
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
-      letter-spacing: 0.5px;
       transition: transform 0.2s, box-shadow 0.2s;
     }
 
@@ -145,25 +161,10 @@
       margin-bottom: 4px;
     }
 
-    .badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      margin-top: 10px;
-      margin-bottom: 14px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .badge-redes { background-color: #ede7f6; color: #6a1b9a; }
-    .badge-trabajo { background-color: #fff8e1; color: #f57f17; }
-    .badge-bancos { background-color: #e8f5e9; color: #2e7d32; }
-
     .botones-tarjeta {
       display: flex;
       gap: 8px;
+      margin-top: 14px;
     }
 
     .btn-eliminar {
@@ -176,12 +177,9 @@
       cursor: pointer;
       font-size: 13px;
       font-weight: 600;
-      transition: background-color 0.2s;
     }
 
-    .btn-eliminar:hover {
-      background-color: #ffcdd2;
-    }
+    .btn-eliminar:hover { background-color: #ffcdd2; }
 
     .btn-editar {
       flex: 1;
@@ -193,12 +191,9 @@
       cursor: pointer;
       font-size: 13px;
       font-weight: 600;
-      transition: background-color 0.2s;
     }
 
-    .btn-editar:hover {
-      background-color: #bbdefb;
-    }
+    .btn-editar:hover { background-color: #bbdefb; }
 
     .vacio {
       color: rgba(255,255,255,0.7);
@@ -207,10 +202,18 @@
       padding: 30px;
     }
 
+    #mensaje-form {
+      margin-top: 10px;
+      font-size: 13px;
+      text-align: center;
+    }
+
   </style>
 </head>
 
 <body>
+
+  <button class="btn-cerrar" onclick="cerrarSesion()">Cerrar sesión</button>
 
   <div class="contenido">
 
@@ -220,7 +223,7 @@
     </div>
 
     <div class="formulario">
-      <h2>Nueva contraseña</h2>
+      <h2 id="titulo-form">Nueva contraseña</h2>
 
       <label>Nombre del servicio</label>
       <input type="text" id="servicio" placeholder="Ej: Facebook">
@@ -228,22 +231,19 @@
 
       <label>Usuario o correo</label>
       <input type="text" id="usuario" placeholder="Ej: samuel@correo.com">
-      <span class="error" id="error-usuario"></span>
 
       <label>Contraseña</label>
       <input type="password" id="contrasena" placeholder="Contraseña del servicio">
       <span class="error" id="error-contrasena"></span>
 
-      <label>Categoría</label>
-      <select id="categoria">
-        <option value="">Selecciona una categoría</option>
-        <option value="redes">Redes Sociales</option>
-        <option value="trabajo">Trabajo</option>
-        <option value="bancos">Bancos</option>
-      </select>
-      <span class="error" id="error-categoria"></span>
+      <label>URL del servicio (opcional)</label>
+      <input type="text" id="url" placeholder="Ej: https://facebook.com">
+
+      <label>Notas (opcional)</label>
+      <input type="text" id="notas" placeholder="Ej: Cuenta personal">
 
       <button class="btn-guardar" onclick="guardar()">Guardar contraseña</button>
+      <p id="mensaje-form"></p>
     </div>
 
     <div class="seccion-lista">
@@ -255,126 +255,184 @@
 
   <script>
 
-    let indiceEdicion = -1;
+    const API = 'http://localhost:3000/api';
+    let idEdicion = null;
 
-    mostrarLista();
-
-    function guardar() {
-
-      document.getElementById("error-servicio").textContent = "";
-      document.getElementById("error-usuario").textContent = "";
-      document.getElementById("error-contrasena").textContent = "";
-      document.getElementById("error-categoria").textContent = "";
-
-      let servicio = document.getElementById("servicio").value.trim();
-      let usuario = document.getElementById("usuario").value.trim();
-      let contrasena = document.getElementById("contrasena").value.trim();
-      let categoria = document.getElementById("categoria").value;
-
-      let hayErrores = false;
-
-      if (servicio === "") {
-        document.getElementById("error-servicio").textContent = "El nombre del servicio es obligatorio";
-        hayErrores = true;
-      }
-
-      if (usuario === "") {
-        document.getElementById("error-usuario").textContent = "El usuario es obligatorio";
-        hayErrores = true;
-      }
-
-      if (contrasena === "") {
-        document.getElementById("error-contrasena").textContent = "La contraseña es obligatoria";
-        hayErrores = true;
-      } else if (contrasena.length < 6) {
-        document.getElementById("error-contrasena").textContent = "Mínimo 6 caracteres";
-        hayErrores = true;
-      }
-
-      if (categoria === "") {
-        document.getElementById("error-categoria").textContent = "Selecciona una categoría";
-        hayErrores = true;
-      }
-
-      if (hayErrores) return;
-
-      let lista = JSON.parse(localStorage.getItem("contrasenas")) || [];
-
-      if (indiceEdicion === -1) {
-        lista.push({ servicio, usuario, contrasena, categoria });
-      } else {
-        lista[indiceEdicion] = { servicio, usuario, contrasena, categoria };
-        indiceEdicion = -1;
-        document.querySelector(".btn-guardar").textContent = "Guardar contraseña";
-      }
-
-      localStorage.setItem("contrasenas", JSON.stringify(lista));
-
-      document.getElementById("servicio").value = "";
-      document.getElementById("usuario").value = "";
-      document.getElementById("contrasena").value = "";
-      document.getElementById("categoria").value = "";
-
-      mostrarLista();
+    // Verificar sesión
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'index.html';
     }
 
-    function mostrarLista() {
+    // Cargar contraseñas al iniciar
+    cargarContrasenas();
 
-      let lista = JSON.parse(localStorage.getItem("contrasenas")) || [];
-      let contenedor = document.getElementById("lista");
-      contenedor.innerHTML = "";
+    async function cargarContrasenas() {
+      try {
+        const respuesta = await fetch(`${API}/contrasenas`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (respuesta.status === 401) {
+          cerrarSesion();
+          return;
+        }
+
+        const datos = await respuesta.json();
+        mostrarLista(datos);
+      } catch (err) {
+        console.error('Error cargando contraseñas:', err);
+      }
+    }
+
+    function mostrarLista(lista) {
+      const contenedor = document.getElementById('lista');
+      contenedor.innerHTML = '';
 
       if (lista.length === 0) {
         contenedor.innerHTML = "<p class='vacio'>No hay contraseñas guardadas todavía.</p>";
         return;
       }
 
-      lista.forEach(function(item, indice) {
-
-        let badgeClase = "";
-        let badgeTexto = "";
-
-        if (item.categoria === "redes") { badgeClase = "badge-redes"; badgeTexto = "Redes Sociales"; }
-        if (item.categoria === "trabajo") { badgeClase = "badge-trabajo"; badgeTexto = "Trabajo"; }
-        if (item.categoria === "bancos") { badgeClase = "badge-bancos"; badgeTexto = "Bancos"; }
-
-        let tarjeta = document.createElement("div");
-        tarjeta.className = "tarjeta";
+      lista.forEach(item => {
+        const tarjeta = document.createElement('div');
+        tarjeta.className = 'tarjeta';
         tarjeta.innerHTML = `
-          <h3>${item.servicio}</h3>
-          <p>👤 ${item.usuario}</p>
-          <p>🔑 ${"•".repeat(item.contrasena.length)}</p>
-          <span class="badge ${badgeClase}">${badgeTexto}</span>
+          <h3>${item.nombre_servicio}</h3>
+          <p>👤 ${item.usuario_servicio || '-'}</p>
+          <p>🔑 ${'•'.repeat(8)}</p>
+          <p>🌐 ${item.url_servicio || '-'}</p>
+          <p>📝 ${item.notas || '-'}</p>
           <div class="botones-tarjeta">
-            <button class="btn-editar" onclick="editar(${indice})"> Editar</button>
-            <button class="btn-eliminar" onclick="eliminar(${indice})"> Eliminar</button>
+            <button class="btn-editar" onclick="editar(${item.id_entrada})">✏️ Editar</button>
+            <button class="btn-eliminar" onclick="eliminar(${item.id_entrada})">🗑️ Eliminar</button>
           </div>
         `;
-
         contenedor.appendChild(tarjeta);
       });
     }
 
-    function eliminar(indice) {
-      let lista = JSON.parse(localStorage.getItem("contrasenas")) || [];
-      lista.splice(indice, 1);
-      localStorage.setItem("contrasenas", JSON.stringify(lista));
-      mostrarLista();
+    async function guardar() {
+      document.getElementById('error-servicio').textContent = '';
+      document.getElementById('error-contrasena').textContent = '';
+      document.getElementById('mensaje-form').textContent = '';
+
+      const servicio = document.getElementById('servicio').value.trim();
+      const usuario = document.getElementById('usuario').value.trim();
+      const contrasena = document.getElementById('contrasena').value.trim();
+      const url = document.getElementById('url').value.trim();
+      const notas = document.getElementById('notas').value.trim();
+
+      let hayErrores = false;
+
+      if (!servicio) {
+        document.getElementById('error-servicio').textContent = 'El nombre del servicio es obligatorio';
+        hayErrores = true;
+      }
+
+      if (!contrasena) {
+        document.getElementById('error-contrasena').textContent = 'La contraseña es obligatoria';
+        hayErrores = true;
+      }
+
+      if (hayErrores) return;
+
+      const body = {
+        nombreServicio: servicio,
+        usuarioServicio: usuario,
+        contrasenaCifrada: contrasena,
+        urlServicio: url,
+        notas: notas
+      };
+
+      try {
+        const metodo = idEdicion ? 'PUT' : 'POST';
+        const url_endpoint = idEdicion ? `${API}/contrasenas/${idEdicion}` : `${API}/contrasenas`;
+
+        const respuesta = await fetch(url_endpoint, {
+          method: metodo,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(body)
+        });
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+          document.getElementById('mensaje-form').textContent = datos.error;
+          return;
+        }
+
+        document.getElementById('mensaje-form').style.color = 'green';
+        document.getElementById('mensaje-form').textContent = idEdicion ? '✅ Actualizada correctamente' : '✅ Guardada correctamente';
+
+        limpiarFormulario();
+        cargarContrasenas();
+
+      } catch (err) {
+        document.getElementById('mensaje-form').textContent = 'Error al conectar con el servidor';
+      }
     }
 
-    function editar(indice) {
-      let lista = JSON.parse(localStorage.getItem("contrasenas")) || [];
-      let item = lista[indice];
+    async function eliminar(id) {
+      if (!confirm('¿Seguro que quieres eliminar esta contraseña?')) return;
 
-      document.getElementById("servicio").value = item.servicio;
-      document.getElementById("usuario").value = item.usuario;
-      document.getElementById("contrasena").value = item.contrasena;
-      document.getElementById("categoria").value = item.categoria;
+      try {
+        const respuesta = await fetch(`${API}/contrasenas/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
 
-      indiceEdicion = indice;
-      document.querySelector(".btn-guardar").textContent = "Actualizar contraseña";
+        if (respuesta.ok) {
+          cargarContrasenas();
+        }
+      } catch (err) {
+        console.error('Error eliminando:', err);
+      }
+    }
 
-      window.scrollTo(0, 0);
+    async function editar(id) {
+      try {
+        const respuesta = await fetch(`${API}/contrasenas`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const lista = await respuesta.json();
+        const item = lista.find(c => c.id_entrada === id);
+
+        if (!item) return;
+
+        document.getElementById('servicio').value = item.nombre_servicio;
+        document.getElementById('usuario').value = item.usuario_servicio || '';
+        document.getElementById('contrasena').value = item.contrasena_cifrada;
+        document.getElementById('url').value = item.url_servicio || '';
+        document.getElementById('notas').value = item.notas || '';
+
+        idEdicion = id;
+        document.getElementById('titulo-form').textContent = 'Editar contraseña';
+        document.querySelector('.btn-guardar').textContent = 'Actualizar contraseña';
+        window.scrollTo(0, 0);
+
+      } catch (err) {
+        console.error('Error cargando para editar:', err);
+      }
+    }
+
+    function limpiarFormulario() {
+      document.getElementById('servicio').value = '';
+      document.getElementById('usuario').value = '';
+      document.getElementById('contrasena').value = '';
+      document.getElementById('url').value = '';
+      document.getElementById('notas').value = '';
+      idEdicion = null;
+      document.getElementById('titulo-form').textContent = 'Nueva contraseña';
+      document.querySelector('.btn-guardar').textContent = 'Guardar contraseña';
+    }
+
+    function cerrarSesion() {
+      localStorage.removeItem('token');
+      window.location.href = 'index.html';
     }
 
   </script>

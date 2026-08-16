@@ -61,7 +61,7 @@
       outline: none;
     }
 
-    span {
+    span.error {
       color: red;
       font-size: 12px;
       display: block;
@@ -85,10 +85,11 @@
       background-color: #283593;
     }
 
-    #mensaje-exito {
-      color: green;
-      font-weight: bold;
+    #mensaje-error {
+      color: red;
+      font-size: 13px;
       margin-top: 15px;
+      display: none;
     }
 
   </style>
@@ -98,60 +99,87 @@
 
   <div class="contenedor">
 
-    <h1>KeyVault</h1>
+    <h1>🔐 KeyVault</h1>
     <p>Gestor de Contraseñas</p>
 
-    <form id="formulario">
+    <label>Correo electrónico</label>
+    <input type="email" id="correo" placeholder="ejemplo@correo.com">
+    <span class="error" id="error-correo"></span>
 
-      <label>Correo electrónico</label>
-      <input type="email" id="correo" placeholder="ejemplo@correo.com">
-      <span id="error-correo"></span>
+    <label>Contraseña maestra</label>
+    <input type="password" id="contrasena" placeholder="Tu contraseña">
+    <span class="error" id="error-contrasena"></span>
 
-      <label>Contraseña maestra</label>
-      <input type="password" id="contraseña" placeholder="Tu contraseña">
-      <span id="error-contraseña"></span>
+    <button onclick="iniciarSesion()">Iniciar sesión</button>
 
-      <button type="button" onclick="validar()">Iniciar sesión</button>
-
-      <p id="mensaje-exito"></p>
-
-    </form>
+    <p id="mensaje-error"></p>
 
   </div>
 
   <script>
 
-    function validar() {
+    // Verificar si ya hay sesión activa
+    if (localStorage.getItem('token')) {
+      window.location.href = 'dashboard.html';
+    }
 
-      document.getElementById("error-correo").textContent = "";
-      document.getElementById("error-contraseña").textContent = "";
-      document.getElementById("mensaje-exito").textContent = "";
+    async function iniciarSesion() {
 
-      let correo = document.getElementById("correo").value;
-      let contraseña = document.getElementById("contraseña").value;
+      // Limpiar errores
+      document.getElementById('error-correo').textContent = '';
+      document.getElementById('error-contrasena').textContent = '';
+      document.getElementById('mensaje-error').style.display = 'none';
 
+      const correo = document.getElementById('correo').value.trim();
+      const contrasena = document.getElementById('contrasena').value.trim();
+
+      // Validaciones locales
       let hayErrores = false;
 
-      if (correo === "") {
-        document.getElementById("error-correo").textContent = "El correo es obligatorio";
+      if (correo === '') {
+        document.getElementById('error-correo').textContent = 'El correo es obligatorio';
         hayErrores = true;
-      } else if (!correo.includes("@")) {
-        document.getElementById("error-correo").textContent = "El correo no es válido";
-        hayErrores = true;
-      }
-
-      if (contraseña === "") {
-        document.getElementById("error-contraseña").textContent = "La contraseña es obligatoria";
-        hayErrores = true;
-      } else if (contraseña.length < 6) {
-        document.getElementById("error-contraseña").textContent = "La contraseña debe tener mínimo 6 caracteres";
+      } else if (!correo.includes('@')) {
+        document.getElementById('error-correo').textContent = 'El correo no es válido';
         hayErrores = true;
       }
 
-      if (!hayErrores) {
-        document.getElementById("mensaje-exito").textContent = "✅ Iniciando sesión...";
+      if (contrasena === '') {
+        document.getElementById('error-contrasena').textContent = 'La contraseña es obligatoria';
+        hayErrores = true;
+      } else if (contrasena.length < 6) {
+        document.getElementById('error-contrasena').textContent = 'Mínimo 6 caracteres';
+        hayErrores = true;
       }
 
+      if (hayErrores) return;
+
+      // Llamada a la API
+      try {
+        const respuesta = await fetch('http://localhost:3000/api/usuarios/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ correo, contrasenaMaestra: contrasena })
+        });
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+          const error = document.getElementById('mensaje-error');
+          error.textContent = datos.error || 'Error al iniciar sesión';
+          error.style.display = 'block';
+          return;
+        }
+
+        // Guardar token y redirigir
+        localStorage.setItem('token', datos.token);
+        window.location.href = 'dashboard.html';
+
+      } catch (err) {
+        const error = document.getElementById('mensaje-error');
+        error.textContent = 'No se pudo conectar con el servidor';
+        error.style.display = 'block';
+      }
     }
 
   </script>
